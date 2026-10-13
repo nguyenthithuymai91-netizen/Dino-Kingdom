@@ -2,13 +2,13 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="Vương Quốc Khủng Long Dễ Thương",
+    page_title="Vương Quốc Khủng Long",
     page_icon="🦖",
     layout="centered"
 )
 
 st.title("🦖 Vương Quốc Khủng Long Siêu Dễ Thương")
-st.write("Dùng phím **Cách (Space)** để nhảy và chơi lại nhanh chóng! Cứ **100 điểm** sẽ đổi Ngày/Đêm.")
+st.write("💡 **Mẹo:** Hãy **click chuột trực tiếp vào trong ô trò chơi** phía dưới một lần, sau đó bấm phím **Cách (Space)** để khủng long nhảy nhé!")
 
 dino_html = """
 <!DOCTYPE html>
@@ -18,33 +18,40 @@ dino_html = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cute Dino Game</title>
     <style>
-        body { margin: 0; background-color: #f7f7f7; overflow: hidden; font-family: 'Courier New', Courier, monospace; }
-        #game-container { position: relative; width: 800px; height: 300px; margin: 20px auto; border: 4px solid #fff; border-radius: 10px; overflow: hidden; box-shadow: 0px 4px 15px rgba(0,0,0,0.2); }
+        body { margin: 0; background-color: #f7f7f7; overflow: hidden; font-family: 'Courier New', Courier, monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        #game-container { position: relative; width: 800px; height: 300px; border: 4px solid #fff; border-radius: 10px; overflow: hidden; box-shadow: 0px 4px 15px rgba(0,0,0,0.2); outline: none; }
         canvas { display: block; }
         #score-display, #game-over-display { position: absolute; font-weight: bold; }
-        #score-display { top: 10px; right: 20px; font-size: 20px; }
-        #game-over-display { top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; display: none; background: rgba(0,0,0,0.75); color: #fff; padding: 25px; border-radius: 12px; border: 2px solid #fff; }
+        #score-display { top: 10px; right: 20px; font-size: 20px; z-index: 10; }
+        #game-over-display { top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; display: none; background: rgba(0,0,0,0.75); color: #fff; padding: 25px; border-radius: 12px; border: 2px solid #fff; z-index: 20; }
         #game-over-display h1 { margin-top: 0; font-size: 36px; color: #ffeb3b; }
+        .focus-hint { margin-top: 8px; font-size: 13px; color: #555; }
     </style>
 </head>
 <body>
 
-<div id="game-container">
+<div id="game-container" tabindex="0">
     <div id="score-display">SCORE: 0</div>
     <div id="game-over-display">
         <h1>GAME OVER</h1>
         <p>Điểm số: <span id="final-score">0</span></p>
-        <p>💡 Nhấn <b>Space</b> hoặc <b>R</b> để chơi lại ngay!</p>
+        <p>💡 Nhấn <b>Space</b> hoặc <b>R</b> để chơi lại!</p>
     </div>
     <canvas id="gameCanvas" width="800" height="300"></canvas>
 </div>
+<div class="focus-hint">👉 Click vào khung game bên trên nếu bấm phím không ăn!</div>
 
 <script>
+const container = document.getElementById("game-container");
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const scoreDisplay = document.getElementById("score-display");
 const gameOverDisplay = document.getElementById("game-over-display");
 const finalScoreDisplay = document.getElementById("final-score");
+
+// Tự động focus vào khung game khi trang vừa tải xong
+window.onload = () => { container.focus(); };
+window.onclick = () => { container.focus(); };
 
 let gameState = 'playing';
 let score = 0;
@@ -61,7 +68,6 @@ function isNight() {
     return cycle % 2 !== 0;
 }
 
-// --- KHỦNG LONG DỄ THƯƠNG ---
 class Dino {
     constructor() {
         this.x = 80;
@@ -96,26 +102,25 @@ class Dino {
         const dx = this.x;
         const dy = this.y;
         
-        // Màu sắc thân khủng long (Xanh tươi đáng yêu)
         ctx.fillStyle = isNight() ? "#a8e063" : "#68bb59";
         
-        // Thân tròn trĩnh
+        // Thân
         ctx.beginPath();
         ctx.roundRect(dx + 10, dy + 15, 28, 24, 10);
         ctx.fill();
 
-        // Đầu to tròn
+        // Đầu
         ctx.beginPath();
         ctx.roundRect(dx + 18, dy - 5, 24, 22, 8);
         ctx.fill();
 
-        // Má hồng dễ thương
+        // Má hồng
         ctx.fillStyle = "#ff80ab";
         ctx.beginPath();
         ctx.arc(dx + 34, dy + 8, 4, 0, Math.PI * 2);
         ctx.fill();
 
-        // Mắt to tròn long lanh
+        // Mắt
         ctx.fillStyle = "#fff";
         ctx.beginPath();
         ctx.arc(dx + 30, dy + 3, 5, 0, Math.PI * 2);
@@ -125,7 +130,7 @@ class Dino {
         ctx.arc(dx + 31, dy + 3, 2, 0, Math.PI * 2);
         ctx.fill();
 
-        // Đuôi ngắn xinh xắn
+        // Đuôi
         ctx.fillStyle = isNight() ? "#a8e063" : "#68bb59";
         ctx.beginPath();
         ctx.moveTo(dx + 12, dy + 22);
@@ -133,7 +138,7 @@ class Dino {
         ctx.lineTo(dx + 10, dy + 32);
         ctx.fill();
 
-        // Chân nhún nhảy
+        // Chân
         ctx.fillRect(dx + 14, dy + 38, 6, 7);
         ctx.fillRect(dx + 26, dy + 38, 6, 7);
 
@@ -148,7 +153,7 @@ class GameObject {
         this.w = w;
         this.h = h;
         this.speed = speed;
-        this.type = type; // 'cactus', 'bird', 'cloud'
+        this.type = type;
     }
 
     update() {
@@ -158,16 +163,13 @@ class GameObject {
     draw() {
         ctx.save();
         if (this.type === 'cactus') {
-            // Xương rồng sinh động
             ctx.fillStyle = isNight() ? "#48c9b0" : "#2e7d32";
             ctx.fillRect(this.x + 10, this.y, 10, this.h);
             ctx.fillRect(this.x + 2, this.y + 10, 8, 15);
             ctx.fillRect(this.x + 20, this.y + 5, 8, 18);
         } else if (this.type === 'bird') {
-            // Chú chim cute
             ctx.fillStyle = isNight() ? "#ff7675" : "#e74c3c";
             ctx.beginPath(); ctx.arc(this.x + 15, this.y + 10, 10, 0, Math.PI * 2); ctx.fill();
-            // Cánh chim
             ctx.fillStyle = "#fff";
             ctx.beginPath(); ctx.arc(this.x + 12, this.y + 8, 5, 0, Math.PI * 2); ctx.fill();
         } else if (this.type === 'cloud') {
@@ -221,11 +223,9 @@ function gameLoop() {
 
     frameCount++;
 
-    // Mặt trời hoặc Mặt trăng
     ctx.fillStyle = night ? "#f1c40f" : "#ffd700";
     ctx.beginPath(); ctx.arc(700, 60, 24, 0, Math.PI * 2); ctx.fill();
 
-    // Mây trôi
     if (Math.random() < 0.02) {
         decorations.push(new GameObject(canvas.width + 50, Math.random() * 100 + 20, 50, 25, speed * 0.3, 'cloud'));
     }
@@ -235,14 +235,12 @@ function gameLoop() {
         if (decorations[i].x < -60) decorations.splice(i, 1);
     }
 
-    // Mặt đất màu xanh cỏ mượt mà
     ctx.save();
     ctx.strokeStyle = night ? "#34495e" : "#2ecc71";
     ctx.lineWidth = 10;
     ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(canvas.width, GROUND_Y); ctx.stroke();
     ctx.restore();
 
-    // Chướng ngại vật
     for (let i = obstacles.length - 1; i >= 0; i--) {
         let obs = obstacles[i];
         obs.update();
@@ -279,8 +277,8 @@ function resetGame() {
     gameLoop();
 }
 
-// --- ĐIỀU KHIỂN BẰNG PHÍM CÁCH (SPACE) & R ---
-window.addEventListener("keydown", function(e) {
+// Bắt sự kiện bàn phím trực tiếp trên container game
+container.addEventListener("keydown", function(e) {
     if (e.code === "Space" || e.code === "ArrowUp") {
         if (gameState === 'over') {
             resetGame();
@@ -289,13 +287,14 @@ window.addEventListener("keydown", function(e) {
         }
         e.preventDefault();
     }
-    if (gameState === 'over' && (e.code === "KeyR" || e.code === "Space")) {
+    if (gameState === 'over' && e.code === "KeyR") {
         resetGame();
         e.preventDefault();
     }
 });
 
 canvas.addEventListener("click", () => {
+    container.focus();
     if (gameState === 'over') {
         resetGame();
     } else {
@@ -310,4 +309,4 @@ gameLoop();
 </html>
 """
 
-components.html(dino_html, height=350)
+components.html(dino_html, height=380)
