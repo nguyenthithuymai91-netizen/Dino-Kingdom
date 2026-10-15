@@ -7,8 +7,8 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🦖 Vương Quốc Khủng Long Siêu Dễ Thương")
-st.write("💡 **Mẹo:** Hãy **click chuột trực tiếp vào trong ô trò chơi** phía dưới một lần, sau đó bấm phím **Cách (Space)** để khủng long nhảy nhé!")
+st.title("🦖 Vương Quốc Khủng Long Siêu Dễ Thương (Bản Có Âm Thanh)")
+st.write("💡 **Mẹo:** Hãy **click chuột trực tiếp vào trong ô trò chơi** phía dưới một lần, sau đó bấm phím **Cách (Space)** để khủng long nhảy và nghe âm thanh nhé!")
 
 dino_html = """
 <!DOCTYPE html>
@@ -49,9 +49,55 @@ const scoreDisplay = document.getElementById("score-display");
 const gameOverDisplay = document.getElementById("game-over-display");
 const finalScoreDisplay = document.getElementById("final-score");
 
+// --- TÍCH HỢP HỆ THỐNG ÂM THANH 8-BIT (Web Audio API) ---
+let audioCtx = null;
+
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+
+function playSound(type) {
+    try {
+        initAudio();
+        if (!audioCtx) return;
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'jump') {
+            // Âm thanh nhảy vui tươi (tần số tăng dần)
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(500, audioCtx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.12);
+        } else if (type === 'hit') {
+            // Âm thanh va chạm/game over (tần số trầm rền)
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.35);
+            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.35);
+        }
+    } catch (e) {
+        console.log("Audio play error: ", e);
+    }
+}
+
 // Tự động focus vào khung game khi trang vừa tải xong
 window.onload = () => { container.focus(); };
-window.onclick = () => { container.focus(); };
+window.onclick = () => { container.focus(); initAudio(); };
 
 let gameState = 'playing';
 let score = 0;
@@ -76,14 +122,15 @@ class Dino {
         this.h = 45;
         this.vy = 0;
         this.gravity = 0.8;
-        this.jump = -15;
+        this.jumpForce = -15;
         this.grounded = true;
     }
 
     jump() {
         if (this.grounded && gameState === 'playing') {
-            this.vy = this.jump;
+            this.vy = this.jumpForce;
             this.grounded = false;
+            playSound('jump'); // Phát âm thanh khi nhảy
         }
     }
 
@@ -266,6 +313,7 @@ function gameLoop() {
 
 function gameOver() {
     gameState = 'over';
+    playSound('hit'); // Phát âm thanh khi va chạm kết thúc game
     finalScoreDisplay.innerText = score;
     gameOverDisplay.style.display = 'block';
 }
@@ -295,6 +343,7 @@ container.addEventListener("keydown", function(e) {
 
 canvas.addEventListener("click", () => {
     container.focus();
+    initAudio();
     if (gameState === 'over') {
         resetGame();
     } else {
