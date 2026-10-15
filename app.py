@@ -7,15 +7,15 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🦖 Vương Quốc Khủng Long (Đã tối ưu hóa xuất hiện Chim)")
-st.write("💡 **Mẹo:** Nhấn **Cách (Space)** hoặc **Mũi tên lên** để nhảy qua xương rồng, và giữ **Mũi tên xuống** để cúi người né chim!")
+st.title("🦖 Vương Quốc Khủng Long & Vườn Hoa Đáng Yêu")
+st.write("💡 **Mẹo:** Nhấn **Space** hoặc **Mũi tên lên** để nhảy, giữ **Mũi tên xuống** để cúi người né chim bay đỏ nhé!")
 
 dino_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Dino Game with Birds</title>
+    <title>Dino Game Flowers & Birds</title>
     <style>
         body {
             margin: 0;
@@ -116,7 +116,7 @@ let dino = {
         if (this.grounded) {
             this.isDuck = status;
             if (status) {
-                this.h = 30; // Thu nhỏ chiều cao khi cúi
+                this.h = 30;
                 this.y = GROUND_Y - 30;
             } else {
                 this.h = 50; 
@@ -148,37 +148,29 @@ let dino = {
         ctx.fillStyle = isN ? "#a8e063" : "#68bb59";
 
         if (this.isDuck) {
-            // --- HÌNH DÁNG KHI CÚI XUỐNG ---
+            // Cúi người
             ctx.beginPath();
             ctx.roundRect(dx + 5, dy + 5, 42, 22, 6);
             ctx.fill();
-
             ctx.beginPath();
             ctx.roundRect(dx + 30, dy - 2, 20, 16, 5);
             ctx.fill();
-
             ctx.fillStyle = "#ff80ab";
             ctx.beginPath();
             ctx.arc(dx + 42, dy + 4, 3, 0, Math.PI * 2);
             ctx.fill();
-
-            ctx.fillStyle = "#111";
-            ctx.fillRect(dx + 38, dy + 2, 3, 3);
         } else {
-            // --- HÌNH DÁNG BÌNH THƯỜNG ---
+            // Bình thường
             ctx.beginPath();
             ctx.roundRect(dx + 10, dy + 15, 30, 26, 8);
             ctx.fill();
-
             ctx.beginPath();
             ctx.roundRect(dx + 20, dy - 4, 25, 22, 6);
             ctx.fill();
-
             ctx.fillStyle = "#ff80ab";
             ctx.beginPath();
             ctx.arc(dx + 36, dy + 7, 4, 0, Math.PI * 2);
             ctx.fill();
-
             ctx.fillStyle = "#fff";
             ctx.beginPath();
             ctx.arc(dx + 32, dy + 3, 4.5, 0, Math.PI * 2);
@@ -187,23 +179,21 @@ let dino = {
             ctx.beginPath();
             ctx.arc(dx + 33, dy + 3, 2, 0, Math.PI * 2);
             ctx.fill();
-
             ctx.fillStyle = isN ? "#a8e063" : "#68bb59";
             ctx.beginPath();
             ctx.moveTo(dx + 12, dy + 20);
             ctx.lineTo(dx, dy + 10);
             ctx.lineTo(dx + 10, dy + 30);
             ctx.fill();
-
             ctx.fillRect(dx + 14, dy + 41, 7, 9);
             ctx.fillRect(dx + 28, dy + 41, 7, 9);
         }
-
         ctx.restore();
     }
 };
 
 let obstacles = [];
+let flowers = []; // Danh sách hoa mọc trên đất
 let decorations = [];
 
 class GameObject {
@@ -227,16 +217,15 @@ class GameObject {
             ctx.fillRect(this.x + 2, this.y + 10, 8, 16);
             ctx.fillRect(this.x + 20, this.y + 5, 8, 20);
         } else if (this.type === 'bird') {
-            // --- VẼ CHIM BAY MÀU ĐỎ/HỒNG NỔI BẬT ---
-            ctx.fillStyle = isN ? "#ff7675" : "#e74c3c";
-            ctx.beginPath(); 
-            ctx.ellipse(this.x + 18, this.y + 12, 16, 9, 0, 0, Math.PI * 2); 
-            ctx.fill();
-            // Cánh chim
-            ctx.fillStyle = "#fff";
-            ctx.beginPath();
-            ctx.arc(this.x + 14, this.y + 8, 5, 0, Math.PI * 2);
-            ctx.fill();
+            // --- CON CHIM MÀU ĐỎ TO RÕ, CHẮC CHẮN HIỆN ---
+            ctx.fillStyle = "#ff3333";
+            ctx.fillRect(this.x, this.y, 35, 18);
+            // Cánh chim màu vàng
+            ctx.fillStyle = "#ffeb3b";
+            ctx.fillRect(this.x + 10, this.y - 8, 12, 10);
+            // Mỏ chim
+            ctx.fillStyle = "#ff9800";
+            ctx.fillRect(this.x + 35, this.y + 4, 8, 6);
         } else if (this.type === 'cloud') {
             ctx.fillStyle = isN ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.9)";
             ctx.beginPath(); ctx.arc(this.x, this.y, 15, 0, Math.PI * 2); ctx.fill();
@@ -252,6 +241,41 @@ class GameObject {
     }
 }
 
+// Lớp vẽ hoa xinh xắn trên mặt đất
+class Flower {
+    constructor(x) {
+        this.x = x;
+        this.y = GROUND_Y - 12;
+        this.speed = speed;
+    }
+    update() {
+        this.x -= this.speed;
+    }
+    draw() {
+        ctx.save();
+        // Thân hoa
+        ctx.strokeStyle = "#27ae60";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(this.x, GROUND_Y);
+        ctx.lineTo(this.x, this.y);
+        ctx.stroke();
+
+        // Cánh hoa màu hồng/đỏ
+        ctx.fillStyle = "#ff6b81";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Nhụy hoa màu vàng
+        ctx.fillStyle = "#f1c40f";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
 function initGame() {
     dino.x = 130;
     dino.h = 50;
@@ -261,21 +285,22 @@ function initGame() {
     dino.isDuck = false;
     obstacles = [];
     decorations = [];
+    flowers = [];
     score = 0;
     frameCount = 0;
     speed = 6;
     
     for (let i = 0; i < 4; i++) {
         decorations.push(new GameObject(Math.random() * canvas.width, Math.random() * 100 + 20, 45, 18, speed * 0.3, 'cloud'));
+        flowers.push(new Flower(Math.random() * canvas.width));
     }
-    // Rút ngắn thời gian để chim xuất hiện nhanh hơn ngay khi bắt đầu
-    setTimeout(spawnObstacle, 1200);
+    setTimeout(spawnObstacle, 1500);
 }
 
 function spawnObstacle() {
     if (gameState !== 'playing') return;
     
-    // Tăng tỉ lệ xuất hiện chim lên 50%
+    // Tỉ lệ sinh chướng ngại vật: Xương rồng hoặc Chim
     let type = Math.random() < 0.5 ? 'cactus' : 'bird';
     let x = canvas.width + 50;
     
@@ -283,13 +308,11 @@ function spawnObstacle() {
         let h = Math.floor(Math.random() * 25) + 40;
         obstacles.push(new GameObject(x, GROUND_Y - h, 30, h, speed, 'cactus'));
     } else {
-        // Đặt vị trí chim bay ở tầm cao vừa phải để khủng long cúi đầu né
-        let birdHeights = [GROUND_Y - 70, GROUND_Y - 95]; 
-        let y = birdHeights[Math.floor(Math.random() * birdHeights.length)];
-        obstacles.push(new GameObject(x, y, 40, 24, speed, 'bird'));
+        // Vị trí chim bay ngang tầm để phải cúi
+        let y = GROUND_Y - 75;
+        obstacles.push(new GameObject(x, y, 43, 20, speed, 'bird'));
     }
-    // Thời gian chờ sinh chướng ngại vật tiếp theo ngắn hơn
-    setTimeout(spawnObstacle, Math.floor(Math.random() * 1000) + 900);
+    setTimeout(spawnObstacle, Math.floor(Math.random() * 1200) + 1000);
 }
 
 function gameLoop() {
@@ -316,6 +339,17 @@ function gameLoop() {
         if (decorations[i].x < -60) decorations.splice(i, 1);
     }
 
+    // Hoa mọc trên đất
+    if (Math.random() < 0.03) {
+        flowers.push(new Flower(canvas.width + 20));
+    }
+    for (let i = flowers.length - 1; i >= 0; i--) {
+        flowers[i].speed = speed;
+        flowers[i].update();
+        flowers[i].draw();
+        if (flowers[i].x < -20) flowers.splice(i, 1);
+    }
+
     // Mặt đất
     ctx.strokeStyle = isN ? "#34495e" : "#2ecc71";
     ctx.lineWidth = 10;
@@ -324,6 +358,7 @@ function gameLoop() {
     // Chướng ngại vật
     for (let i = obstacles.length - 1; i >= 0; i--) {
         let obs = obstacles[i];
+        obs.speed = speed;
         obs.update();
         obs.draw();
         if (obs.collidesWith(dino)) {
@@ -377,4 +412,43 @@ function resetGame() {
 }
 
 window.addEventListener("keydown", function(e) {
-    if (e.code === "Space"
+    if (e.code === "Space" || e.code === "ArrowUp") {
+        if (gameState === 'over') {
+            resetGame();
+        } else {
+            dino.jump();
+        }
+        e.preventDefault();
+    } else if (e.code === "ArrowDown") {
+        if (gameState === 'playing') {
+            dino.duck(true);
+        }
+        e.preventDefault();
+    }
+});
+
+window.addEventListener("keyup", function(e) {
+    if (e.code === "ArrowDown") {
+        dino.duck(false);
+        e.preventDefault();
+    }
+});
+
+canvas.addEventListener("click", () => {
+    canvas.focus();
+    initAudio();
+    if (gameState === 'over') {
+        resetGame();
+    } else {
+        dino.jump();
+    }
+});
+
+initGame();
+gameLoop();
+</script>
+</body>
+</html>
+"""
+
+components.html(dino_html, height=450)
