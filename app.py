@@ -7,15 +7,15 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🦖 Vương Quốc Khủng Long & Vườn Hoa Đáng Yêu")
-st.write("💡 **Mẹo:** Nhấn **Space** hoặc **Mũi tên lên** để nhảy, giữ **Mũi tên xuống** để cúi người né chim bay đỏ nhé!")
+st.title("🦖 Vương Quốc Khủng Long & Thảm Cỏ Hoa Lá")
+st.write("💡 **Mẹo:** Nhấn **Space** hoặc **Mũi tên lên** để nhảy, giữ **Mũi tên xuống** để cúi người né chim!")
 
 dino_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Dino Game Flowers & Birds</title>
+    <title>Dino Game Grass & Wings</title>
     <style>
         body {
             margin: 0;
@@ -193,7 +193,7 @@ let dino = {
 };
 
 let obstacles = [];
-let flowers = []; // Danh sách hoa mọc trên đất
+let flowers = [];
 let decorations = [];
 
 class GameObject {
@@ -217,15 +217,34 @@ class GameObject {
             ctx.fillRect(this.x + 2, this.y + 10, 8, 16);
             ctx.fillRect(this.x + 20, this.y + 5, 8, 20);
         } else if (this.type === 'bird') {
-            // --- CON CHIM MÀU ĐỎ TO RÕ, CHẮC CHẮN HIỆN ---
-            ctx.fillStyle = "#ff3333";
-            ctx.fillRect(this.x, this.y, 35, 18);
-            // Cánh chim màu vàng
-            ctx.fillStyle = "#ffeb3b";
-            ctx.fillRect(this.x + 10, this.y - 8, 12, 10);
+            // --- VẼ CHIM CHI TIẾT CÓ CÁNH ĐÀN HOÀNG ---
+            ctx.fillStyle = isN ? "#ff7675" : "#e74c3c";
+            // Thân chim
+            ctx.beginPath();
+            ctx.ellipse(this.x + 18, this.y + 10, 16, 9, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Đầu chim
+            ctx.beginPath();
+            ctx.arc(this.x + 28, this.y + 6, 6, 0, Math.PI * 2);
+            ctx.fill();
             // Mỏ chim
-            ctx.fillStyle = "#ff9800";
-            ctx.fillRect(this.x + 35, this.y + 4, 8, 6);
+            ctx.fillStyle = "#f1c40f";
+            ctx.beginPath();
+            ctx.moveTo(this.x + 34, this.y + 5);
+            ctx.lineTo(this.x + 42, this.y + 7);
+            ctx.lineTo(this.x + 34, this.y + 10);
+            ctx.fill();
+            // Cánh chim vỗ (tạo hiệu ứng thay đổi theo khung hình)
+            ctx.fillStyle = "#fff";
+            ctx.beginPath();
+            let wingOffset = Math.floor(frameCount / 8) % 2 === 0 ? -6 : 6;
+            ctx.ellipse(this.x + 14, this.y + 6 + wingOffset, 5, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Mắt chim
+            ctx.fillStyle = "#111";
+            ctx.beginPath();
+            ctx.arc(this.x + 30, this.y + 5, 1.5, 0, Math.PI * 2);
+            ctx.fill();
         } else if (this.type === 'cloud') {
             ctx.fillStyle = isN ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.9)";
             ctx.beginPath(); ctx.arc(this.x, this.y, 15, 0, Math.PI * 2); ctx.fill();
@@ -241,11 +260,11 @@ class GameObject {
     }
 }
 
-// Lớp vẽ hoa xinh xắn trên mặt đất
+// Lớp vẽ hoa rải rác trên thảm cỏ
 class Flower {
     constructor(x) {
         this.x = x;
-        this.y = GROUND_Y - 12;
+        this.y = GROUND_Y + 15;
         this.speed = speed;
     }
     update() {
@@ -253,25 +272,14 @@ class Flower {
     }
     draw() {
         ctx.save();
-        // Thân hoa
-        ctx.strokeStyle = "#27ae60";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(this.x, GROUND_Y);
-        ctx.lineTo(this.x, this.y);
-        ctx.stroke();
-
-        // Cánh hoa màu hồng/đỏ
+        // Cánh hoa nhiều màu sắc dễ thương
         ctx.fillStyle = "#ff6b81";
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, 5, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Nhụy hoa màu vàng
+        ctx.beginPath(); ctx.arc(this.x, this.y, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(this.x - 4, this.y - 3, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(this.x + 4, this.y - 3, 3, 0, Math.PI * 2); ctx.fill();
+        // Nhụy hoa
         ctx.fillStyle = "#f1c40f";
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(this.x, this.y - 1, 2, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
     }
 }
@@ -300,7 +308,6 @@ function initGame() {
 function spawnObstacle() {
     if (gameState !== 'playing') return;
     
-    // Tỉ lệ sinh chướng ngại vật: Xương rồng hoặc Chim
     let type = Math.random() < 0.5 ? 'cactus' : 'bird';
     let x = canvas.width + 50;
     
@@ -308,9 +315,8 @@ function spawnObstacle() {
         let h = Math.floor(Math.random() * 25) + 40;
         obstacles.push(new GameObject(x, GROUND_Y - h, 30, h, speed, 'cactus'));
     } else {
-        // Vị trí chim bay ngang tầm để phải cúi
         let y = GROUND_Y - 75;
-        obstacles.push(new GameObject(x, y, 43, 20, speed, 'bird'));
+        obstacles.push(new GameObject(x, y, 42, 22, speed, 'bird'));
     }
     setTimeout(spawnObstacle, Math.floor(Math.random() * 1200) + 1000);
 }
@@ -339,8 +345,17 @@ function gameLoop() {
         if (decorations[i].x < -60) decorations.splice(i, 1);
     }
 
-    // Hoa mọc trên đất
-    if (Math.random() < 0.03) {
+    // --- PHỦ KÍN PHẦN DƯỚI BẰNG MÀU XANH LÁ + HOA LẤM TẤM ---
+    ctx.fillStyle = isN ? "#27ae60" : "#2ecc71";
+    ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
+
+    // Đường viền thảm cỏ phía trên
+    ctx.strokeStyle = isN ? "#219653" : "#27ae60";
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(canvas.width, GROUND_Y); ctx.stroke();
+
+    // Hoa mọc trên thảm cỏ
+    if (Math.random() < 0.04) {
         flowers.push(new Flower(canvas.width + 20));
     }
     for (let i = flowers.length - 1; i >= 0; i--) {
@@ -349,11 +364,6 @@ function gameLoop() {
         flowers[i].draw();
         if (flowers[i].x < -20) flowers.splice(i, 1);
     }
-
-    // Mặt đất
-    ctx.strokeStyle = isN ? "#34495e" : "#2ecc71";
-    ctx.lineWidth = 10;
-    ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(canvas.width, GROUND_Y); ctx.stroke();
 
     // Chướng ngại vật
     for (let i = obstacles.length - 1; i >= 0; i--) {
