@@ -7,7 +7,7 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🦖 Vương Quốc Khủng Long (Bản Hoàn Chỉnh)")
+st.title("🦖 Vương Quốc Khủng Long Siêu Dễ Thương")
 st.write("💡 **Mẹo:** Click chuột vào khung game bên dưới một lần, sau đó bấm phím **Cách (Space)** hoặc mũi tên lên để nhảy!")
 
 dino_html = """
@@ -16,7 +16,7 @@ dino_html = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dino Game Full Canvas</title>
+    <title>Cute Dino Game</title>
     <style>
         body { 
             margin: 0; 
@@ -45,7 +45,6 @@ dino_html = """
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// Tự động focus vào canvas để nhận phím bấm ngay lập tức
 window.onload = () => { canvas.focus(); };
 window.onclick = () => { canvas.focus(); initAudio(); };
 
@@ -91,7 +90,7 @@ function playSound(type) {
     }
 }
 
-let gameState = 'playing'; // 'playing' hoặc 'over'
+let gameState = 'playing';
 let score = 0;
 let highScore = 0;
 let frameCount = 0;
@@ -124,24 +123,52 @@ let dino = {
         }
     },
     draw: function() {
-        ctx.fillStyle = isNight() ? "#a8e063" : "#68bb59";
-        // Thân
-        ctx.fillRect(this.x + 10, this.y + 18, 32, 28);
-        // Đầu
-        ctx.fillRect(this.x + 22, this.y - 4, 28, 24);
-        // Mắt
-        ctx.fillStyle = "#111";
-        ctx.fillRect(this.x + 40, this.y + 2, 5, 5);
-        // Đuôi
-        ctx.fillStyle = isNight() ? "#a8e063" : "#68bb59";
+        ctx.save();
+        const dx = this.x;
+        const dy = this.y;
+        let isN = isNight();
+        
+        ctx.fillStyle = isN ? "#a8e063" : "#68bb59";
+        
+        // Thân khủng long tròn trịa dễ thương
         ctx.beginPath();
-        ctx.moveTo(this.x + 10, this.y + 22);
-        ctx.lineTo(this.x, this.y + 12);
-        ctx.lineTo(this.x + 10, this.y + 32);
+        ctx.roundRect(dx + 12, dy + 18, 34, 30, 10);
         ctx.fill();
+
+        // Đầu khủng long
+        ctx.beginPath();
+        ctx.roundRect(dx + 22, dy - 4, 28, 24, 8);
+        ctx.fill();
+
+        // Má hồng dễ thương
+        ctx.fillStyle = "#ff80ab";
+        ctx.beginPath();
+        ctx.arc(dx + 40, dy + 8, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Mắt khủng long
+        ctx.fillStyle = "#fff";
+        ctx.beginPath();
+        ctx.arc(dx + 36, dy + 3, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#111";
+        ctx.beginPath();
+        ctx.arc(dx + 37, dy + 3, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Đuôi
+        ctx.fillStyle = isN ? "#a8e063" : "#68bb59";
+        ctx.beginPath();
+        ctx.moveTo(dx + 15, dy + 24);
+        ctx.lineTo(dx, dy + 14);
+        ctx.lineTo(dx + 12, dy + 36);
+        ctx.fill();
+
         // Chân
-        ctx.fillRect(this.x + 14, this.y + 46, 8, 9);
-        ctx.fillRect(this.x + 30, this.y + 46, 8, 9);
+        ctx.fillRect(dx + 18, dy + 48, 7, 8);
+        ctx.fillRect(dx + 32, dy + 48, 7, 8);
+
+        ctx.restore();
     }
 };
 
@@ -167,17 +194,23 @@ class GameObject {
     }
     draw() {
         ctx.save();
+        let isN = isNight();
         if (this.type === 'cactus') {
-            ctx.fillStyle = isNight() ? "#48c9b0" : "#2e7d32";
+            ctx.fillStyle = isN ? "#48c9b0" : "#2e7d32";
             ctx.fillRect(this.x + 12, this.y, 12, this.h);
             ctx.fillRect(this.x + 3, this.y + 12, 9, 18);
             ctx.fillRect(this.x + 24, this.y + 6, 9, 22);
         } else if (this.type === 'bird') {
-            ctx.fillStyle = isNight() ? "#ff7675" : "#e74c3c";
-            ctx.fillRect(this.x, this.y + 5, 30, 14);
+            ctx.fillStyle = isN ? "#ff7675" : "#e74c3c";
+            ctx.beginPath(); ctx.arc(this.x + 15, this.y + 10, 12, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#fff";
+            ctx.beginPath(); ctx.arc(this.x + 11, this.y + 8, 5, 0, Math.PI * 2); ctx.fill();
         } else if (this.type === 'cloud') {
-            ctx.fillStyle = isNight() ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.85)";
-            ctx.fillRect(this.x, this.y, 60, 22);
+            // Vẽ lại đám mây bồng bềnh xinh xắn
+            ctx.fillStyle = isN ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.85)";
+            ctx.beginPath(); ctx.arc(this.x, this.y, 18, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(this.x + 18, this.y - 6, 22, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(this.x + 36, this.y, 18, 0, Math.PI * 2); ctx.fill();
         }
         ctx.restore();
     }
@@ -199,7 +232,7 @@ function initGame() {
     speed = 7;
     
     for (let i = 0; i < 5; i++) {
-        decorations.push(new GameObject(Math.random() * canvas.width, Math.random() * 120 + 30, 60, 22, speed * 0.3, 'cloud'));
+        decorations.push(new GameObject(Math.random() * canvas.width, Math.random() * 120 + 30, 50, 25, speed * 0.3, 'cloud'));
     }
     setTimeout(spawnObstacle, 2000);
 }
@@ -232,9 +265,9 @@ function gameLoop() {
     ctx.fillStyle = night ? "#f1c40f" : "#ffd700";
     ctx.beginPath(); ctx.arc(920, 75, 30, 0, Math.PI * 2); ctx.fill();
 
-    // Mây
+    // Mây bồng bềnh
     if (Math.random() < 0.02) {
-        decorations.push(new GameObject(canvas.width + 50, Math.random() * 120 + 30, 60, 22, speed * 0.3, 'cloud'));
+        decorations.push(new GameObject(canvas.width + 50, Math.random() * 120 + 30, 50, 25, speed * 0.3, 'cloud'));
     }
     for (let i = decorations.length - 1; i >= 0; i--) {
         decorations[i].update();
@@ -258,17 +291,17 @@ function gameLoop() {
         if (obs.x < -obs.w) obstacles.splice(i, 1);
     }
 
-    // Khủng long
+    // Khủng long dễ thương
     dino.update();
     dino.draw();
 
-    // Hiển thị Điểm số và Kỷ lục trực tiếp lên Canvas
+    // Điểm số và Kỷ lục
     ctx.fillStyle = night ? "#f1c40f" : "#2c3e50";
     ctx.font = "bold 22px 'Courier New', monospace";
     ctx.textAlign = "right";
-    ctx.fillText("HI: " + highScore + "  |  SCORE: " + score + (night ? " 🌙" : " ☀️"), canvas.width - 30, 45);
+    ctx.fillText("HI: " + highScore + "  |  SCORE: " + score + (night ? " 🌙 ĐÊM" : " ☀️ NGÀY"), canvas.width - 30, 45);
 
-    // Màn hình Game Over vẽ trực tiếp
+    // Màn hình Game Over
     if (gameState === 'over') {
         ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -301,7 +334,6 @@ function resetGame() {
     initGame();
 }
 
-// Bắt sự kiện bàn phím
 window.addEventListener("keydown", function(e) {
     if (e.code === "Space" || e.code === "ArrowUp") {
         if (gameState === 'over') {
@@ -313,7 +345,6 @@ window.addEventListener("keydown", function(e) {
     }
 });
 
-// Bắt sự kiện click chuột trực tiếp vào canvas
 canvas.addEventListener("click", () => {
     canvas.focus();
     initAudio();
@@ -331,5 +362,4 @@ gameLoop();
 </html>
 """
 
-# Tăng chiều cao của component lên 480px để hiển thị trọn vẹn
 components.html(dino_html, height=480)
