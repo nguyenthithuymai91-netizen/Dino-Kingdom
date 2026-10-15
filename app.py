@@ -8,14 +8,14 @@ st.set_page_config(
 )
 
 st.title("🦖 Vương Quốc Khủng Long Siêu Dễ Thương")
-st.write("💡 **Mẹo:** Click chuột vào màn hình game bên dưới, sau đó bấm phím **Cách (Space)** để nhảy!")
+st.write("💡 **Mẹo:** Click chuột vào màn hình game bên dưới, sau đó bấm phím **Cách (Space)** để khủng long nhảy!")
 
 dino_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Dino Game Final</title>
+    <title>Dino Game Ultra Safe</title>
     <style>
         body {
             margin: 0;
@@ -119,50 +119,33 @@ let dino = {
         }
     },
     draw: function() {
-        ctx.save();
-        const dx = this.x;
-        const dy = this.y;
-        let isN = isNight();
-
+        // --- VẼ KHỦNG LONG BẰNG HÌNH KHỐI CƠ BẢN (CHẮC CHẮN HIỆN) ---
+        let isN = (Math.floor(score / 100) % 2 !== 0);
+        
         // Thân khủng long
         ctx.fillStyle = isN ? "#a8e063" : "#68bb59";
-        ctx.fillRect(dx + 10, dy + 15, 30, 26);
+        ctx.fillRect(this.x + 10, this.y + 15, 30, 25);
 
         // Đầu khủng long
-        ctx.fillRect(dx + 20, dy - 4, 25, 22);
+        ctx.fillRect(this.x + 22, this.y - 5, 24, 22);
 
-        // Má hồng
+        // Má hồng dễ thương
         ctx.fillStyle = "#ff80ab";
-        ctx.beginPath();
-        ctx.arc(dx + 36, dy + 7, 4, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillRect(this.x + 38, this.y + 6, 5, 5);
 
-        // Mắt
+        // Mắt khủng long
         ctx.fillStyle = "#111";
-        ctx.fillRect(dx + 32, dy + 2, 4, 4);
+        ctx.fillRect(this.x + 34, this.y + 2, 4, 4);
 
-        // Đuôi
+        // Chân khủng long
         ctx.fillStyle = isN ? "#a8e063" : "#68bb59";
-        ctx.beginPath();
-        ctx.moveTo(dx + 12, dy + 20);
-        ctx.lineTo(dx, dy + 10);
-        ctx.lineTo(dx + 10, dy + 30);
-        ctx.fill();
-
-        // Chân
-        ctx.fillRect(dx + 14, dy + 41, 7, 9);
-        ctx.fillRect(dx + 28, dy + 41, 7, 9);
-
-        ctx.restore();
+        ctx.fillRect(this.x + 14, this.y + 40, 8, 10);
+        ctx.fillRect(this.x + 28, this.y + 40, 8, 10);
     }
 };
 
 let obstacles = [];
 let decorations = [];
-
-function isNight() {
-    return Math.floor(score / 100) % 2 !== 0;
-}
 
 class GameObject {
     constructor(x, y, w, h, speed, type) {
@@ -177,8 +160,7 @@ class GameObject {
         this.x -= this.speed;
     }
     draw() {
-        ctx.save();
-        let isN = isNight();
+        let isN = (Math.floor(score / 100) % 2 !== 0);
         if (this.type === 'cactus') {
             ctx.fillStyle = isN ? "#48c9b0" : "#2e7d32";
             ctx.fillRect(this.x + 10, this.y, 10, this.h);
@@ -189,11 +171,8 @@ class GameObject {
             ctx.fillRect(this.x, this.y + 5, 25, 12);
         } else if (this.type === 'cloud') {
             ctx.fillStyle = isN ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.9)";
-            ctx.beginPath(); ctx.arc(this.x, this.y, 15, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.arc(this.x + 15, this.y - 5, 18, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.arc(this.x + 30, this.y, 15, 0, Math.PI * 2); ctx.fill();
+            ctx.fillRect(this.x, this.y, 45, 18);
         }
-        ctx.restore();
     }
     collidesWith(obj) {
         if (this.type === 'cloud') return false;
@@ -213,7 +192,7 @@ function initGame() {
     speed = 6;
     
     for (let i = 0; i < 4; i++) {
-        decorations.push(new GameObject(Math.random() * canvas.width, Math.random() * 100 + 20, 45, 20, speed * 0.3, 'cloud'));
+        decorations.push(new GameObject(Math.random() * canvas.width, Math.random() * 100 + 20, 45, 18, speed * 0.3, 'cloud'));
     }
     setTimeout(spawnObstacle, 2000);
 }
@@ -233,8 +212,8 @@ function spawnObstacle() {
 }
 
 function gameLoop() {
-    let night = isNight();
-    canvas.style.backgroundColor = night ? "#1e272c" : "#b9f2ff";
+    let isN = (Math.floor(score / 100) % 2 !== 0);
+    canvas.style.backgroundColor = isN ? "#1e272c" : "#b9f2ff";
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (gameState === 'playing') {
@@ -243,21 +222,21 @@ function gameLoop() {
     }
 
     // Mặt trời / Mặt trăng
-    ctx.fillStyle = night ? "#f1c40f" : "#ffd700";
+    ctx.fillStyle = isN ? "#f1c40f" : "#ffd700";
     ctx.beginPath(); ctx.arc(800, 60, 25, 0, Math.PI * 2); ctx.fill();
 
     // Mây
     if (Math.random() < 0.02) {
-        decorations.push(new GameObject(canvas.width + 50, Math.random() * 100 + 20, 45, 20, speed * 0.3, 'cloud'));
+        decorations.push(new GameObject(canvas.width + 50, Math.random() * 100 + 20, 45, 18, speed * 0.3, 'cloud'));
     }
     for (let i = decorations.length - 1; i >= 0; i--) {
         decorations[i].update();
-        decorations.draw();
+        decorations[i].draw();
         if (decorations[i].x < -60) decorations.splice(i, 1);
     }
 
     // Mặt đất
-    ctx.strokeStyle = night ? "#34495e" : "#2ecc71";
+    ctx.strokeStyle = isN ? "#34495e" : "#2ecc71";
     ctx.lineWidth = 10;
     ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(canvas.width, GROUND_Y); ctx.stroke();
 
@@ -276,15 +255,12 @@ function gameLoop() {
     dino.update();
     dino.draw();
 
-    // Hiển thị Điểm tách thành 2 dòng ở góc trên bên phải
-    ctx.fillStyle = night ? "#f1c40f" : "#2c3e50";
+    // Hiển thị Điểm (HI ở trên, SCORE ở dưới góc phải)
+    ctx.fillStyle = isN ? "#f1c40f" : "#2c3e50";
     ctx.font = "bold 18px monospace";
     ctx.textAlign = "right";
-    
-    // Dòng trên: Kỷ lục (HI)
     ctx.fillText("🏆 HI: " + highScore, canvas.width - 25, 30);
-    // Dòng dưới: Điểm số hiện tại (SCORE) kèm biểu tượng Ngày/Đêm
-    ctx.fillText("🎯 SCORE: " + score + (night ? " 🌙" : " ☀️"), canvas.width - 25, 55);
+    ctx.fillText("🎯 SCORE: " + score + (isN ? " 🌙" : " ☀️"), canvas.width - 25, 55);
 
     // Màn hình Game Over
     if (gameState === 'over') {
@@ -337,3 +313,14 @@ canvas.addEventListener("click", () => {
         resetGame();
     } else {
         dino.jump();
+    }
+});
+
+initGame();
+gameLoop();
+</script>
+</body>
+</html>
+"""
+
+components.html(dino_html, height=450)
