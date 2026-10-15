@@ -7,8 +7,8 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🦖 Vương Quốc Khủng Long (Màn Hình Phóng To)")
-st.write("💡 **Mẹo:** Click chuột vào khung game bên dưới một lần, sau đó bấm phím **Cách (Space)** để nhảy!")
+st.title("🦖 Vương Quốc Khủng Long (Đã sửa lỗi hiển thị)")
+st.write("💡 **Mẹo:** Click chuột vào khung game bên dưới một lần, sau đó bấm phím **Cách (Space)** để khủng long nhảy!")
 
 dino_html = """
 <!DOCTYPE html>
@@ -16,10 +16,9 @@ dino_html = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cute Dino Game Large</title>
+    <title>Cute Dino Game Fixed</title>
     <style>
         body { margin: 0; background-color: #f7f7f7; overflow: hidden; font-family: 'Courier New', Courier, monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-        /* Tăng kích thước khung game rộng hơn (1050x400) */
         #game-container { position: relative; width: 1050px; height: 400px; border: 4px solid #fff; border-radius: 12px; overflow: hidden; box-shadow: 0px 6px 20px rgba(0,0,0,0.25); outline: none; }
         canvas { display: block; }
         #score-display, #game-over-display { position: absolute; font-weight: bold; }
@@ -40,7 +39,6 @@ dino_html = """
         <p>🏆 Kỷ lục cao nhất: <span id="high-score">0</span></p>
         <p>💡 Nhấn <b>Space</b> hoặc <b>R</b> để chơi lại!</p>
     </div>
-    <!-- Phóng to độ phân giải canvas tương ứng -->
     <canvas id="gameCanvas" width="1050" height="400"></canvas>
 </div>
 <div class="focus-hint">👉 Click vào khung game bên trên nếu bấm phím không ăn!</div>
@@ -108,8 +106,8 @@ let dino;
 let obstacles = [];
 let decorations = [];
 let frameCount = 0;
-let speed = 7; // Tăng nhẹ tốc độ cho màn hình lớn
-const GROUND_Y = 330; // Mặt đất dời xuống thấp hơn để cân đối với chiều cao 400px
+let speed = 7;
+const GROUND_Y = 330;
 
 function isNight() {
     let cycle = Math.floor(score / 100);
@@ -120,7 +118,7 @@ class Dino {
     constructor() {
         this.x = 90;
         this.y = GROUND_Y - 55;
-        this.w = 50;  // Phóng to kích thước khủng long
+        this.w = 50;
         this.h = 55;
         this.vy = 0;
         this.gravity = 0.85;
@@ -153,43 +151,27 @@ class Dino {
         
         ctx.fillStyle = isNight() ? "#a8e063" : "#68bb59";
         
-        // Thân
-        ctx.beginPath();
-        ctx.roundRect(dx + 12, dy + 18, 35, 30, 12);
-        ctx.fill();
+        // Thân khủng long
+        ctx.fillRect(dx + 10, dy + 18, 32, 28);
 
-        // Đầu
-        ctx.beginPath();
-        ctx.roundRect(dx + 22, dy - 6, 30, 26, 10);
-        ctx.fill();
+        // Đầu khủng long
+        ctx.fillRect(dx + 22, dy - 4, 28, 24);
 
-        // Má hồng
-        ctx.fillStyle = "#ff80ab";
-        ctx.beginPath();
-        ctx.arc(dx + 42, dy + 9, 5, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Mắt
-        ctx.fillStyle = "#fff";
-        ctx.beginPath();
-        ctx.arc(dx + 38, dy + 3, 6, 0, Math.PI * 2);
-        ctx.fill();
+        // Mắt khủng long
         ctx.fillStyle = "#111";
-        ctx.beginPath();
-        ctx.arc(dx + 39, dy + 3, 2.5, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillRect(dx + 40, dy + 2, 5, 5);
 
-        // Đuôi
+        // Đuôi khủng long
         ctx.fillStyle = isNight() ? "#a8e063" : "#68bb59";
         ctx.beginPath();
-        ctx.moveTo(dx + 15, dy + 28);
-        ctx.lineTo(dx, dy + 18);
-        ctx.lineTo(dx + 12, dy + 40);
+        ctx.moveTo(dx + 10, dy + 22);
+        ctx.lineTo(dx, dy + 12);
+        ctx.lineTo(dx + 10, dy + 32);
         ctx.fill();
 
-        // Chân
-        ctx.fillRect(dx + 18, dy + 48, 7, 8);
-        ctx.fillRect(dx + 32, dy + 48, 7, 8);
+        // Chân khủng long
+        ctx.fillRect(dx + 14, dy + 46, 8, 9);
+        ctx.fillRect(dx + 30, dy + 46, 8, 9);
 
         ctx.restore();
     }
@@ -218,14 +200,10 @@ class GameObject {
             ctx.fillRect(this.x + 24, this.y + 6, 9, 22);
         } else if (this.type === 'bird') {
             ctx.fillStyle = isNight() ? "#ff7675" : "#e74c3c";
-            ctx.beginPath(); ctx.arc(this.x + 18, this.y + 12, 12, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = "#fff";
-            ctx.beginPath(); ctx.arc(this.x + 14, this.y + 9, 6, 0, Math.PI * 2); ctx.fill();
+            ctx.fillRect(this.x, this.y + 5, 25, 12);
         } else if (this.type === 'cloud') {
             ctx.fillStyle = isNight() ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.85)";
-            ctx.beginPath(); ctx.arc(this.x, this.y, 22, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.arc(this.x + 22, this.y - 6, 28, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.arc(this.x + 44, this.y, 22, 0, Math.PI * 2); ctx.fill();
+            ctx.fillRect(this.x, this.y, 50, 20);
         }
         ctx.restore();
     }
@@ -256,118 +234,3 @@ function spawnObstacle() {
     let type = Math.random() < 0.6 ? 'cactus' : 'bird';
     let x = canvas.width + 50;
     if (type === 'cactus') {
-        let h = Math.floor(Math.random() * 30) + 45;
-        obstacles.push(new GameObject(x, GROUND_Y - h, 36, h, speed, 'cactus'));
-    } else {
-        let y = Math.floor(Math.random() * 90) + 160;
-        obstacles.push(new GameObject(x, y, 36, 24, speed, 'bird'));
-    }
-    setTimeout(spawnObstacle, Math.floor(Math.random() * 1400) + 1000);
-}
-
-function gameLoop() {
-    let night = isNight();
-    canvas.style.backgroundColor = night ? "#1e272c" : "#b9f2ff";
-    ctx.fillStyle = night ? "#1e272c" : "#b9f2ff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    if (gameState === 'playing') {
-        frameCount++;
-        score = Math.floor(frameCount / 10);
-    }
-
-    // Mặt trời / Mặt trăng phóng to
-    ctx.fillStyle = night ? "#f1c40f" : "#ffd700";
-    ctx.beginPath(); ctx.arc(920, 75, 30, 0, Math.PI * 2); ctx.fill();
-
-    if (Math.random() < 0.02) {
-        decorations.push(new GameObject(canvas.width + 50, Math.random() * 120 + 30, 60, 30, speed * 0.3, 'cloud'));
-    }
-    for (let i = decorations.length - 1; i >= 0; i--) {
-        decorations[i].update();
-        decorations[i].draw();
-        if (decorations[i].x < -80) decorations.splice(i, 1);
-    }
-
-    // Đường mặt đất
-    ctx.save();
-    ctx.strokeStyle = night ? "#34495e" : "#2ecc71";
-    ctx.lineWidth = 12;
-    ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(canvas.width, GROUND_Y); ctx.stroke();
-    ctx.restore();
-
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-        let obs = obstacles[i];
-        obs.update();
-        obs.draw();
-        if (obs.collidesWith(dino)) {
-            gameOver();
-        }
-        if (obs.x < -obs.w) obstacles.splice(i, 1);
-    }
-
-    dino.update();
-    dino.draw();
-
-    scoreDisplay.innerText = "SCORE: " + score + (night ? " 🌙 ĐÊM" : " ☀️ NGÀY");
-    scoreDisplay.style.color = night ? "#f1c40f" : "#2c3e50";
-
-    if (gameState === 'playing') {
-        requestAnimationFrame(gameLoop);
-    }
-}
-
-function gameOver() {
-    gameState = 'over';
-    playSound('hit');
-    
-    if (score > highScore) {
-        highScore = score;
-    }
-
-    finalScoreDisplay.innerText = score;
-    highScoreDisplay.innerText = highScore;
-    gameOverDisplay.style.display = 'block';
-}
-
-function resetGame() {
-    gameOverDisplay.style.display = 'none';
-    gameState = 'playing';
-    initGame();
-    gameLoop();
-}
-
-container.addEventListener("keydown", function(e) {
-    if (e.code === "Space" || e.code === "ArrowUp") {
-        if (gameState === 'over') {
-            resetGame();
-        } else {
-            dino.jump();
-        }
-        e.preventDefault();
-    }
-    if (gameState === 'over' && e.code === "KeyR") {
-        resetGame();
-        e.preventDefault();
-    }
-});
-
-canvas.addEventListener("click", () => {
-    container.focus();
-    initAudio();
-    if (gameState === 'over') {
-        resetGame();
-    } else {
-        dino.jump();
-    }
-});
-
-initGame();
-gameLoop();
-</script>
-</body>
-</html>
-"""
-
-# Điều chỉnh chiều cao hiển thị của Streamlit component phù hợp với khung game mới (480px)
-components.html(dino_html, height=480)
