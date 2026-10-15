@@ -7,15 +7,15 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🦖 Vương Quốc Khủng Long & Bầu Trời Chim Bay")
-st.write("💡 **Mẹo:** Nhấn **Space** hoặc **Mũi tên lên** để nhảy qua xương rồng, và giữ **Mũi tên xuống** để cúi người né chim bay trên trời!")
+st.title("🦖 Vương Quốc Khủng Long & Chim Bay Ngược Hướng")
+st.write("💡 **Mẹo:** Nhấn **Space** hoặc **Mũi tên lên** để nhảy qua xương rồng, giữ **Mũi tên xuống** để cúi người né chim bay ngược chiều trên trời cao!")
 
 dino_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Dino Game with Birds & Flowers</title>
+    <title>Dino Game Flying Birds Reverse</title>
     <style>
         body {
             margin: 0;
@@ -206,7 +206,13 @@ class GameObject {
         this.type = type; 
     }
     update() {
-        this.x -= this.speed;
+        if (this.type === 'bird') {
+            // Chim bay ngược hướng (từ trái qua phải)
+            this.x += this.speed * 0.9;
+        } else {
+            // Xương rồng và mây di chuyển bình thường (từ phải qua trái)
+            this.x -= this.speed;
+        }
     }
     draw() {
         ctx.save();
@@ -217,28 +223,33 @@ class GameObject {
             ctx.fillRect(this.x + 2, this.y + 10, 8, 16);
             ctx.fillRect(this.x + 20, this.y + 5, 8, 20);
         } else if (this.type === 'bird') {
-            // --- CHIM BAY TRÊN TRỜI (CÓ CÁNH VỖ & MỎ RÕ RÀNG) ---
+            // --- CHIM BAY TRÊN TRỜI CAO & HƯỚNG MẶT VỀ PHÍA KHỦNG LONG ---
             ctx.fillStyle = isN ? "#ff7675" : "#e74c3c";
+            // Thân chim
             ctx.beginPath();
             ctx.ellipse(this.x + 18, this.y + 10, 16, 9, 0, 0, Math.PI * 2);
             ctx.fill();
+            // Đầu chim quay về bên trái (hướng về phía khủng long)
             ctx.beginPath();
-            ctx.arc(this.x + 28, this.y + 6, 6, 0, Math.PI * 2);
+            ctx.arc(this.x + 8, this.y + 6, 6, 0, Math.PI * 2);
             ctx.fill();
+            // Mỏ chim chỉ về bên trái
             ctx.fillStyle = "#f1c40f";
             ctx.beginPath();
-            ctx.moveTo(this.x + 34, this.y + 5);
-            ctx.lineTo(this.x + 42, this.y + 7);
-            ctx.lineTo(this.x + 34, this.y + 10);
+            ctx.moveTo(this.x + 2, this.y + 5);
+            ctx.lineTo(this.x - 6, this.y + 7);
+            ctx.lineTo(this.x + 2, this.y + 10);
             ctx.fill();
+            // Cánh chim vỗ lên xuống
             ctx.fillStyle = "#fff";
             ctx.beginPath();
             let wingOffset = Math.floor(frameCount / 8) % 2 === 0 ? -6 : 6;
-            ctx.ellipse(this.x + 14, this.y + 6 + wingOffset, 5, 8, 0, 0, Math.PI * 2);
+            ctx.ellipse(this.x + 18, this.y + 6 + wingOffset, 5, 8, 0, 0, Math.PI * 2);
             ctx.fill();
+            // Mắt chim
             ctx.fillStyle = "#111";
             ctx.beginPath();
-            ctx.arc(this.x + 30, this.y + 5, 1.5, 0, Math.PI * 2);
+            ctx.arc(this.x + 6, this.y + 5, 1.5, 0, Math.PI * 2);
             ctx.fill();
         } else if (this.type === 'cloud') {
             ctx.fillStyle = isN ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.9)";
@@ -301,18 +312,19 @@ function spawnObstacle() {
     if (gameState !== 'playing') return;
     
     let type = Math.random() < 0.5 ? 'cactus' : 'bird';
-    let x = canvas.width + 50;
     
     if (type === 'cactus') {
+        let x = canvas.width + 50;
         let h = Math.floor(Math.random() * 25) + 40;
         obstacles.push(new GameObject(x, GROUND_Y - h, 30, h, speed, 'cactus'));
     } else {
-        // Chim bay ở tầm cao trên trời
+        // Chim xuất hiện từ phía bên trái màn hình bay ngược lại
+        let x = -60;
         let birdHeights = [GROUND_Y - 95, GROUND_Y - 120]; 
         let y = birdHeights[Math.floor(Math.random() * birdHeights.length)];
         obstacles.push(new GameObject(x, y, 42, 22, speed, 'bird'));
     }
-    setTimeout(spawnObstacle, Math.floor(Math.random() * 1200) + 1000);
+    setTimeout(spawnObstacle, Math.floor(Math.random() * 1400) + 1100);
 }
 
 function gameLoop() {
@@ -366,7 +378,12 @@ function gameLoop() {
         if (obs.collidesWith(dino)) {
             gameOver();
         }
-        if (obs.x < -obs.w) obstacles.splice(i, 1);
+        // Xoá khi ra ngoài màn hình (xương rồng đi qua trái, chim bay ra biên phải)
+        if (obs.type === 'bird' && obs.x > canvas.width + 50) {
+            obstacles.splice(i, 1);
+        } else if (obs.type === 'cactus' && obs.x < -obs.w) {
+            obstacles.splice(i, 1);
+        }
     }
 
     // Khủng long
