@@ -15,7 +15,7 @@ dino_html = """
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Dino Game Ultra Safe</title>
+    <title>Dino Game Cute Final</title>
     <style>
         body {
             margin: 0;
@@ -94,7 +94,7 @@ let speed = 6;
 const GROUND_Y = 320;
 
 let dino = {
-    x: 80,
+    x: 130, // Đã dịch chuyển khủng long lùi vào trong màn hình hơn (từ 80 thành 130)
     y: GROUND_Y - 50,
     w: 45,
     h: 50,
@@ -119,28 +119,53 @@ let dino = {
         }
     },
     draw: function() {
-        // --- VẼ KHỦNG LONG BẰNG HÌNH KHỐI CƠ BẢN (CHẮC CHẮN HIỆN) ---
+        ctx.save();
+        const dx = this.x;
+        const dy = this.y;
         let isN = (Math.floor(score / 100) % 2 !== 0);
-        
-        // Thân khủng long
+
+        // --- KHỦNG LONG DỄ THƯƠNG (BO TRÒN + MÁ HỒNG) ---
         ctx.fillStyle = isN ? "#a8e063" : "#68bb59";
-        ctx.fillRect(this.x + 10, this.y + 15, 30, 25);
 
-        // Đầu khủng long
-        ctx.fillRect(this.x + 22, this.y - 5, 24, 22);
+        // Thân
+        ctx.beginPath();
+        ctx.roundRect(dx + 10, dy + 15, 30, 26, 8);
+        ctx.fill();
 
-        // Má hồng dễ thương
+        // Đầu
+        ctx.beginPath();
+        ctx.roundRect(dx + 20, dy - 4, 25, 22, 6);
+        ctx.fill();
+
+        // Má hồng xinh xắn
         ctx.fillStyle = "#ff80ab";
-        ctx.fillRect(this.x + 38, this.y + 6, 5, 5);
+        ctx.beginPath();
+        ctx.arc(dx + 36, dy + 7, 4, 0, Math.PI * 2);
+        ctx.fill();
 
-        // Mắt khủng long
+        // Mắt to tròn
+        ctx.fillStyle = "#fff";
+        ctx.beginPath();
+        ctx.arc(dx + 32, dy + 3, 4.5, 0, Math.PI * 2);
+        ctx.fill();
         ctx.fillStyle = "#111";
-        ctx.fillRect(this.x + 34, this.y + 2, 4, 4);
+        ctx.beginPath();
+        ctx.arc(dx + 33, dy + 3, 2, 0, Math.PI * 2);
+        ctx.fill();
 
-        // Chân khủng long
+        // Đuôi
         ctx.fillStyle = isN ? "#a8e063" : "#68bb59";
-        ctx.fillRect(this.x + 14, this.y + 40, 8, 10);
-        ctx.fillRect(this.x + 28, this.y + 40, 8, 10);
+        ctx.beginPath();
+        ctx.moveTo(dx + 12, dy + 20);
+        ctx.lineTo(dx, dy + 10);
+        ctx.lineTo(dx + 10, dy + 30);
+        ctx.fill();
+
+        // Chân
+        ctx.fillRect(dx + 14, dy + 41, 7, 9);
+        ctx.fillRect(dx + 28, dy + 41, 7, 9);
+
+        ctx.restore();
     }
 };
 
@@ -160,6 +185,7 @@ class GameObject {
         this.x -= this.speed;
     }
     draw() {
+        ctx.save();
         let isN = (Math.floor(score / 100) % 2 !== 0);
         if (this.type === 'cactus') {
             ctx.fillStyle = isN ? "#48c9b0" : "#2e7d32";
@@ -168,11 +194,17 @@ class GameObject {
             ctx.fillRect(this.x + 20, this.y + 5, 8, 20);
         } else if (this.type === 'bird') {
             ctx.fillStyle = isN ? "#ff7675" : "#e74c3c";
-            ctx.fillRect(this.x, this.y + 5, 25, 12);
+            ctx.beginPath(); ctx.arc(this.x + 12, this.y + 10, 10, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#fff";
+            ctx.beginPath(); ctx.arc(this.x + 9, this.y + 8, 4, 0, Math.PI * 2); ctx.fill();
         } else if (this.type === 'cloud') {
+            // --- ĐÁM MÂY BỒNG BỀNH XINH XẮN ---
             ctx.fillStyle = isN ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.9)";
-            ctx.fillRect(this.x, this.y, 45, 18);
+            ctx.beginPath(); ctx.arc(this.x, this.y, 15, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(this.x + 15, this.y - 6, 18, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(this.x + 32, this.y, 15, 0, Math.PI * 2); ctx.fill();
         }
+        ctx.restore();
     }
     collidesWith(obj) {
         if (this.type === 'cloud') return false;
@@ -182,6 +214,7 @@ class GameObject {
 }
 
 function initGame() {
+    dino.x = 130; // Cập nhật lại vị trí khi reset game
     dino.y = GROUND_Y - dino.h;
     dino.vy = 0;
     dino.grounded = true;
