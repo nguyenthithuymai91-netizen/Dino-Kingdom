@@ -7,15 +7,15 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🦖 Vương Quốc Khủng Long & Thảm Cỏ Hoa Lá")
-st.write("💡 **Mẹo:** Nhấn **Space** hoặc **Mũi tên lên** để nhảy, giữ **Mũi tên xuống** để cúi người né chim!")
+st.title("🦖 Vương Quốc Khủng Long & Bầu Trời Chim Bay")
+st.write("💡 **Mẹo:** Nhấn **Space** hoặc **Mũi tên lên** để nhảy qua xương rồng, và giữ **Mũi tên xuống** để cúi người né chim bay trên trời!")
 
 dino_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Dino Game Grass & Wings</title>
+    <title>Dino Game with Birds & Flowers</title>
     <style>
         body {
             margin: 0;
@@ -217,30 +217,25 @@ class GameObject {
             ctx.fillRect(this.x + 2, this.y + 10, 8, 16);
             ctx.fillRect(this.x + 20, this.y + 5, 8, 20);
         } else if (this.type === 'bird') {
-            // --- VẼ CHIM CHI TIẾT CÓ CÁNH ĐÀN HOÀNG ---
+            // --- CHIM BAY TRÊN TRỜI (CÓ CÁNH VỖ & MỎ RÕ RÀNG) ---
             ctx.fillStyle = isN ? "#ff7675" : "#e74c3c";
-            // Thân chim
             ctx.beginPath();
             ctx.ellipse(this.x + 18, this.y + 10, 16, 9, 0, 0, Math.PI * 2);
             ctx.fill();
-            // Đầu chim
             ctx.beginPath();
             ctx.arc(this.x + 28, this.y + 6, 6, 0, Math.PI * 2);
             ctx.fill();
-            // Mỏ chim
             ctx.fillStyle = "#f1c40f";
             ctx.beginPath();
             ctx.moveTo(this.x + 34, this.y + 5);
             ctx.lineTo(this.x + 42, this.y + 7);
             ctx.lineTo(this.x + 34, this.y + 10);
             ctx.fill();
-            // Cánh chim vỗ (tạo hiệu ứng thay đổi theo khung hình)
             ctx.fillStyle = "#fff";
             ctx.beginPath();
             let wingOffset = Math.floor(frameCount / 8) % 2 === 0 ? -6 : 6;
             ctx.ellipse(this.x + 14, this.y + 6 + wingOffset, 5, 8, 0, 0, Math.PI * 2);
             ctx.fill();
-            // Mắt chim
             ctx.fillStyle = "#111";
             ctx.beginPath();
             ctx.arc(this.x + 30, this.y + 5, 1.5, 0, Math.PI * 2);
@@ -260,7 +255,6 @@ class GameObject {
     }
 }
 
-// Lớp vẽ hoa rải rác trên thảm cỏ
 class Flower {
     constructor(x) {
         this.x = x;
@@ -272,12 +266,10 @@ class Flower {
     }
     draw() {
         ctx.save();
-        // Cánh hoa nhiều màu sắc dễ thương
         ctx.fillStyle = "#ff6b81";
         ctx.beginPath(); ctx.arc(this.x, this.y, 4, 0, Math.PI * 2); ctx.fill();
         ctx.beginPath(); ctx.arc(this.x - 4, this.y - 3, 3, 0, Math.PI * 2); ctx.fill();
         ctx.beginPath(); ctx.arc(this.x + 4, this.y - 3, 3, 0, Math.PI * 2); ctx.fill();
-        // Nhụy hoa
         ctx.fillStyle = "#f1c40f";
         ctx.beginPath(); ctx.arc(this.x, this.y - 1, 2, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
@@ -315,7 +307,9 @@ function spawnObstacle() {
         let h = Math.floor(Math.random() * 25) + 40;
         obstacles.push(new GameObject(x, GROUND_Y - h, 30, h, speed, 'cactus'));
     } else {
-        let y = GROUND_Y - 75;
+        // Chim bay ở tầm cao trên trời
+        let birdHeights = [GROUND_Y - 95, GROUND_Y - 120]; 
+        let y = birdHeights[Math.floor(Math.random() * birdHeights.length)];
         obstacles.push(new GameObject(x, y, 42, 22, speed, 'bird'));
     }
     setTimeout(spawnObstacle, Math.floor(Math.random() * 1200) + 1000);
@@ -345,16 +339,14 @@ function gameLoop() {
         if (decorations[i].x < -60) decorations.splice(i, 1);
     }
 
-    // --- PHỦ KÍN PHẦN DƯỚI BẰNG MÀU XANH LÁ + HOA LẤM TẤM ---
+    // Thảm cỏ xanh mướt phần dưới + hoa lá
     ctx.fillStyle = isN ? "#27ae60" : "#2ecc71";
     ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
 
-    // Đường viền thảm cỏ phía trên
     ctx.strokeStyle = isN ? "#219653" : "#27ae60";
     ctx.lineWidth = 4;
     ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(canvas.width, GROUND_Y); ctx.stroke();
 
-    // Hoa mọc trên thảm cỏ
     if (Math.random() < 0.04) {
         flowers.push(new Flower(canvas.width + 20));
     }
