@@ -7,15 +7,15 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🦖 Vương Quốc Khủng Long Siêu Dễ Thương")
-st.write("💡 **Mẹo:** Click chuột vào màn hình game bên dưới, sau đó bấm phím **Cách (Space)** để khủng long nhảy!")
+st.title("🦖 Vương Quốc Khủng Long (Có Thêm Chim & Cúi Người)")
+st.write("💡 **Mẹo:** Nhấn **Cách (Space)** hoặc **Mũi tên lên** để nhảy qua xương rồng, và nhấn **Mũi tên xuống** để cúi người né chim bay!")
 
 dino_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Dino Game Cute Final</title>
+    <title>Dino Game with Duck & Bird</title>
     <style>
         body {
             margin: 0;
@@ -94,7 +94,7 @@ let speed = 6;
 const GROUND_Y = 320;
 
 let dino = {
-    x: 130, // Đã dịch chuyển khủng long lùi vào trong màn hình hơn (từ 80 thành 130)
+    x: 130,
     y: GROUND_Y - 50,
     w: 45,
     h: 50,
@@ -102,13 +102,29 @@ let dino = {
     gravity: 0.8,
     jumpForce: -15,
     grounded: true,
+    isDuck: false,
+    
     jump: function() {
-        if (this.grounded && gameState === 'playing') {
+        if (this.grounded && gameState === 'playing' && !this.isDuck) {
             this.vy = this.jumpForce;
             this.grounded = false;
             playSound('jump');
         }
     },
+    
+    duck: function(status) {
+        if (this.grounded) {
+            this.isDuck = status;
+            if (status) {
+                this.h = 30; // Thu nhỏ chiều cao khi cúi
+                this.y = GROUND_Y - 30;
+            } else {
+                this.h = 50; // Trở về chiều cao cũ
+                this.y = GROUND_Y - 50;
+            }
+        }
+    },
+
     update: function() {
         this.vy += this.gravity;
         this.y += this.vy;
@@ -116,54 +132,75 @@ let dino = {
             this.y = GROUND_Y - this.h;
             this.vy = 0;
             this.grounded = true;
+            if (this.isDuck) {
+                this.h = 30;
+                this.y = GROUND_Y - 30;
+            }
         }
     },
+
     draw: function() {
         ctx.save();
         const dx = this.x;
         const dy = this.y;
         let isN = (Math.floor(score / 100) % 2 !== 0);
 
-        // --- KHỦNG LONG DỄ THƯƠNG (BO TRÒN + MÁ HỒNG) ---
         ctx.fillStyle = isN ? "#a8e063" : "#68bb59";
 
-        // Thân
-        ctx.beginPath();
-        ctx.roundRect(dx + 10, dy + 15, 30, 26, 8);
-        ctx.fill();
+        if (this.isDuck) {
+            // --- HÌNH DÁNG KHI CÚI XUỐNG ---
+            ctx.beginPath();
+            ctx.roundRect(dx + 5, dy + 5, 42, 22, 6);
+            ctx.fill();
 
-        // Đầu
-        ctx.beginPath();
-        ctx.roundRect(dx + 20, dy - 4, 25, 22, 6);
-        ctx.fill();
+            // Đầu cúi thấp
+            ctx.beginPath();
+            ctx.roundRect(dx + 30, dy - 2, 20, 16, 5);
+            ctx.fill();
 
-        // Má hồng xinh xắn
-        ctx.fillStyle = "#ff80ab";
-        ctx.beginPath();
-        ctx.arc(dx + 36, dy + 7, 4, 0, Math.PI * 2);
-        ctx.fill();
+            // Má hồng
+            ctx.fillStyle = "#ff80ab";
+            ctx.beginPath();
+            ctx.arc(dx + 42, dy + 4, 3, 0, Math.PI * 2);
+            ctx.fill();
 
-        // Mắt to tròn
-        ctx.fillStyle = "#fff";
-        ctx.beginPath();
-        ctx.arc(dx + 32, dy + 3, 4.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#111";
-        ctx.beginPath();
-        ctx.arc(dx + 33, dy + 3, 2, 0, Math.PI * 2);
-        ctx.fill();
+            // Mắt
+            ctx.fillStyle = "#111";
+            ctx.fillRect(dx + 38, dy + 2, 3, 3);
+        } else {
+            // --- HÌNH DÁNG BÌNH THƯỜNG ---
+            ctx.beginPath();
+            ctx.roundRect(dx + 10, dy + 15, 30, 26, 8);
+            ctx.fill();
 
-        // Đuôi
-        ctx.fillStyle = isN ? "#a8e063" : "#68bb59";
-        ctx.beginPath();
-        ctx.moveTo(dx + 12, dy + 20);
-        ctx.lineTo(dx, dy + 10);
-        ctx.lineTo(dx + 10, dy + 30);
-        ctx.fill();
+            ctx.beginPath();
+            ctx.roundRect(dx + 20, dy - 4, 25, 22, 6);
+            ctx.fill();
 
-        // Chân
-        ctx.fillRect(dx + 14, dy + 41, 7, 9);
-        ctx.fillRect(dx + 28, dy + 41, 7, 9);
+            ctx.fillStyle = "#ff80ab";
+            ctx.beginPath();
+            ctx.arc(dx + 36, dy + 7, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = "#fff";
+            ctx.beginPath();
+            ctx.arc(dx + 32, dy + 3, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#111";
+            ctx.beginPath();
+            ctx.arc(dx + 33, dy + 3, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = isN ? "#a8e063" : "#68bb59";
+            ctx.beginPath();
+            ctx.moveTo(dx + 12, dy + 20);
+            ctx.lineTo(dx, dy + 10);
+            ctx.lineTo(dx + 10, dy + 30);
+            ctx.fill();
+
+            ctx.fillRect(dx + 14, dy + 41, 7, 9);
+            ctx.fillRect(dx + 28, dy + 41, 7, 9);
+        }
 
         ctx.restore();
     }
@@ -179,7 +216,7 @@ class GameObject {
         this.w = w;
         this.h = h;
         this.speed = speed;
-        this.type = type;
+        this.type = type; // 'cactus', 'bird', 'cloud'
     }
     update() {
         this.x -= this.speed;
@@ -193,12 +230,17 @@ class GameObject {
             ctx.fillRect(this.x + 2, this.y + 10, 8, 16);
             ctx.fillRect(this.x + 20, this.y + 5, 8, 20);
         } else if (this.type === 'bird') {
+            // --- VẼ CHIM BAY CAO (CẦN CÚI ĐỂ NÉ) ---
             ctx.fillStyle = isN ? "#ff7675" : "#e74c3c";
-            ctx.beginPath(); ctx.arc(this.x + 12, this.y + 10, 10, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); 
+            ctx.ellipse(this.x + 15, this.y + 10, 14, 8, 0, 0, Math.PI * 2); 
+            ctx.fill();
+            // Cánh chim
             ctx.fillStyle = "#fff";
-            ctx.beginPath(); ctx.arc(this.x + 9, this.y + 8, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath();
+            ctx.arc(this.x + 12, this.y + 6, 4, 0, Math.PI * 2);
+            ctx.fill();
         } else if (this.type === 'cloud') {
-            // --- ĐÁM MÂY BỒNG BỀNH XINH XẮN ---
             ctx.fillStyle = isN ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.9)";
             ctx.beginPath(); ctx.arc(this.x, this.y, 15, 0, Math.PI * 2); ctx.fill();
             ctx.beginPath(); ctx.arc(this.x + 15, this.y - 6, 18, 0, Math.PI * 2); ctx.fill();
@@ -214,146 +256,4 @@ class GameObject {
 }
 
 function initGame() {
-    dino.x = 130; // Cập nhật lại vị trí khi reset game
-    dino.y = GROUND_Y - dino.h;
-    dino.vy = 0;
-    dino.grounded = true;
-    obstacles = [];
-    decorations = [];
-    score = 0;
-    frameCount = 0;
-    speed = 6;
-    
-    for (let i = 0; i < 4; i++) {
-        decorations.push(new GameObject(Math.random() * canvas.width, Math.random() * 100 + 20, 45, 18, speed * 0.3, 'cloud'));
-    }
-    setTimeout(spawnObstacle, 2000);
-}
-
-function spawnObstacle() {
-    if (gameState !== 'playing') return;
-    let type = Math.random() < 0.6 ? 'cactus' : 'bird';
-    let x = canvas.width + 50;
-    if (type === 'cactus') {
-        let h = Math.floor(Math.random() * 25) + 40;
-        obstacles.push(new GameObject(x, GROUND_Y - h, 30, h, speed, 'cactus'));
-    } else {
-        let y = Math.floor(Math.random() * 80) + 150;
-        obstacles.push(new GameObject(x, y, 30, 20, speed, 'bird'));
-    }
-    setTimeout(spawnObstacle, Math.floor(Math.random() * 1400) + 1000);
-}
-
-function gameLoop() {
-    let isN = (Math.floor(score / 100) % 2 !== 0);
-    canvas.style.backgroundColor = isN ? "#1e272c" : "#b9f2ff";
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (gameState === 'playing') {
-        frameCount++;
-        score = Math.floor(frameCount / 10);
-    }
-
-    // Mặt trời / Mặt trăng
-    ctx.fillStyle = isN ? "#f1c40f" : "#ffd700";
-    ctx.beginPath(); ctx.arc(800, 60, 25, 0, Math.PI * 2); ctx.fill();
-
-    // Mây
-    if (Math.random() < 0.02) {
-        decorations.push(new GameObject(canvas.width + 50, Math.random() * 100 + 20, 45, 18, speed * 0.3, 'cloud'));
-    }
-    for (let i = decorations.length - 1; i >= 0; i--) {
-        decorations[i].update();
-        decorations[i].draw();
-        if (decorations[i].x < -60) decorations.splice(i, 1);
-    }
-
-    // Mặt đất
-    ctx.strokeStyle = isN ? "#34495e" : "#2ecc71";
-    ctx.lineWidth = 10;
-    ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(canvas.width, GROUND_Y); ctx.stroke();
-
-    // Chướng ngại vật
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-        let obs = obstacles[i];
-        obs.update();
-        obs.draw();
-        if (obs.collidesWith(dino)) {
-            gameOver();
-        }
-        if (obs.x < -obs.w) obstacles.splice(i, 1);
-    }
-
-    // Khủng long
-    dino.update();
-    dino.draw();
-
-    // Hiển thị Điểm (HI ở trên, SCORE ở dưới góc phải)
-    ctx.fillStyle = isN ? "#f1c40f" : "#2c3e50";
-    ctx.font = "bold 18px monospace";
-    ctx.textAlign = "right";
-    ctx.fillText("🏆 HI: " + highScore, canvas.width - 25, 30);
-    ctx.fillText("🎯 SCORE: " + score + (isN ? " 🌙" : " ☀️"), canvas.width - 25, 55);
-
-    // Màn hình Game Over
-    if (gameState === 'over') {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.fillStyle = "#ffeb3b";
-        ctx.font = "bold 38px monospace";
-        ctx.textAlign = "center";
-        ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 35);
-
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "18px monospace";
-        ctx.fillText("Điểm số hiện tại: " + score, canvas.width / 2, canvas.height / 2 + 5);
-        ctx.fillText("🏆 Kỷ lục cao nhất: " + highScore, canvas.width / 2, canvas.height / 2 + 35);
-        ctx.fillText("💡 Nhấn SPACE để chơi lại!", canvas.width / 2, canvas.height / 2 + 75);
-    }
-
-    requestAnimationFrame(gameLoop);
-}
-
-function gameOver() {
-    gameState = 'over';
-    playSound('hit');
-    if (score > highScore) {
-        highScore = score;
-    }
-}
-
-function resetGame() {
-    gameState = 'playing';
-    initGame();
-}
-
-window.addEventListener("keydown", function(e) {
-    if (e.code === "Space" || e.code === "ArrowUp") {
-        if (gameState === 'over') {
-            resetGame();
-        } else {
-            dino.jump();
-        }
-        e.preventDefault();
-    }
-});
-
-canvas.addEventListener("click", () => {
-    canvas.focus();
-    initAudio();
-    if (gameState === 'over') {
-        resetGame();
-    } else {
-        dino.jump();
-    }
-});
-
-initGame();
-gameLoop();
-</script>
-</body>
-</html>
-"""
-
-components.html(dino_html, height=450)
+    d
