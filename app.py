@@ -8,7 +8,7 @@ st.set_page_config(
 )
 
 st.title("🦖 Vương Quốc Khủng Long & Thảm Cỏ Hoa Lá (Bản Nâng Cấp)")
-st.write("💡 **Mẹo:** Click chuột vào màn hình game, dùng **Space / Mũi tên lên** để nhảy, giữ **Mũi tên xuống** để cúi né chim!")
+st.write("💡 **Mẹo:** Click chuột vào màn hình game, dùng **Space / Mũi tên lên** để nhảy, giữ **Mũi tên xuống** để cúi né chim và vòng hoa treo!")
 
 dino_html = """
 <!DOCTYPE html>
@@ -280,6 +280,17 @@ class GameObject {
             ctx.beginPath();
             ctx.arc(this.x + 30, this.y + 5, 1.5, 0, Math.PI * 2);
             ctx.fill();
+        } else if (this.type === 'garland') {
+            // Vẽ vòng hoa / thanh vòm ngang bắt buộc phải cúi đầu
+            ctx.fillStyle = "#e84393";
+            ctx.beginPath();
+            ctx.roundRect(this.x, this.y, this.w, this.h, 10);
+            ctx.fill();
+            // Trang trí hoa nhỏ trên vòng hoa
+            ctx.fillStyle = "#ffeaa7";
+            ctx.beginPath(); ctx.arc(this.x + 15, this.y + 10, 5, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(this.x + 35, this.y + 10, 5, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(this.x + 55, this.y + 10, 5, 0, Math.PI * 2); ctx.fill();
         } else if (this.type === 'cloud') {
             ctx.fillStyle = isN ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.9)";
             ctx.beginPath(); ctx.arc(this.x, this.y, 15, 0, Math.PI * 2); ctx.fill();
@@ -370,18 +381,24 @@ function initGame() {
 function spawnObstacle() {
     if (gameState !== 'playing') return;
     
-    let type = Math.random() < 0.5 ? 'cactus' : 'bird';
+    // Random chọn 1 trong 3 loại: Xương rồng, Chim, hoặc Vòng hoa ngang bắt buộc cúi đầu
+    let rand = Math.random();
+    let type = rand < 0.4 ? 'cactus' : (rand < 0.7 ? 'bird' : 'garland');
     let x = canvas.width + 50;
     
     if (type === 'cactus') {
         let h = Math.floor(Math.random() * 25) + 40;
         obstacles.push(new GameObject(x, GROUND_Y - h, 30, h, speed, 'cactus'));
-    } else {
+    } else if (type === 'bird') {
         let birdColors = ["#ff4757", "#2ed573", "#1e90ff", "#ffa502", "#9b59b6", "#ff6b81"];
         let randomColor = birdColors[Math.floor(Math.random() * birdColors.length)];
         let birdHeights = [GROUND_Y - 140, GROUND_Y - 165, GROUND_Y - 190]; 
         let y = birdHeights[Math.floor(Math.random() * birdHeights.length)];
         obstacles.push(new GameObject(x, y, 42, 22, speed, 'bird', randomColor));
+    } else {
+        // Vòng hoa đặt ở độ cao ngang tầm đầu khủng long đứng, bắt buộc phải cúi xuống mới qua được
+        let y = GROUND_Y - 75;
+        obstacles.push(new GameObject(x, y, 70, 20, speed, 'garland'));
     }
 
     if (Math.random() < 0.2) {
@@ -465,7 +482,6 @@ function gameLoop() {
     dino.update();
     dino.draw();
 
-    // Điểm số đã được căn lề chuẩn đẹp ở góc phải (canvas.width - 25)
     ctx.fillStyle = isN ? "#f1c40f" : "#2c3e50";
     ctx.font = "bold 18px monospace";
     ctx.textAlign = "right";
