@@ -2,25 +2,26 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="Vương Quốc Khủng Long",
+    page_title="Vương Quốc Khủng Long Nâng Cao",
     page_icon="🦖",
     layout="centered"
 )
 
-st.title("🦖 Vương Quốc Khủng Long & Thảm Cỏ Hoa Lá")
-st.write("💡 **Mẹo:** Click chuột vào màn hình game, dùng **Space / Mũi tên lên** để nhảy qua xương rồng, và giữ **Mũi tên xuống** để cúi người né đàn chim sặc sỡ bay trên cao!")
+st.title("🦖 Vương Quốc Khủng Long & Thảm Cỏ Hoa Lá (Bản Nâng Cấp)")
+st.write("💡 **Mẹo:** Click chuột vào màn hình game, dùng **Space / Mũi tên lên** để nhảy, giữ **Mũi tên xuống** để cúi né chim!")
 
 dino_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Dino Game Score Padded</title>
+    <title>Dino Game Upgraded</title>
     <style>
         body {
             margin: 0;
             background-color: #f0f2f5;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -33,11 +34,35 @@ dino_html = """
             box-shadow: 0px 10px 30px rgba(0,0,0,0.25);
             outline: none;
         }
+        .btn-container {
+            margin-top: 10px;
+            display: flex;
+            gap: 15px;
+        }
+        .game-btn {
+            background-color: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .game-btn:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body>
 
 <canvas id="gameCanvas" width="900" height="400" tabindex="1"></canvas>
+
+<div class="btn-container">
+    <button class="game-btn" onclick="triggerJump()">🦘 NHẢY / CHƠI LẠI</button>
+    <button class="game-btn" style="background-color: #2ed573;" onmousedown="triggerDuck(true)" onmouseup="triggerDuck(false)" ontouchstart="triggerDuck(true)" ontouchend="triggerDuck(false)">🦆 CÚI XUỐNG</button>
+</div>
 
 <script>
 const canvas = document.getElementById("gameCanvas");
@@ -46,7 +71,7 @@ const ctx = canvas.getContext("2d");
 window.onload = () => { canvas.focus(); };
 window.onclick = () => { canvas.focus(); initAudio(); };
 
-// --- HỆ THỐNG ÂM THANH 8-BIT THƯ GIÃN ---
+// --- HỆ THỐNG ÂM THANH 8-BIT ---
 let audioCtx = null;
 function initAudio() {
     if (!audioCtx) {
@@ -82,6 +107,14 @@ function playSound(type) {
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
             osc.start();
             osc.stop(audioCtx.currentTime + 0.35);
+        } else if (type === 'powerup') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
         }
     } catch (e) {}
 }
@@ -103,6 +136,7 @@ let dino = {
     jumpForce: -15,
     grounded: true,
     isDuck: false,
+    shieldTimer: 0,
     
     jump: function() {
         if (this.grounded && gameState === 'playing' && !this.isDuck) {
@@ -137,6 +171,9 @@ let dino = {
                 this.y = GROUND_Y - 30;
             }
         }
+        if (this.shieldTimer > 0) {
+            this.shieldTimer--;
+        }
     },
 
     draw: function() {
@@ -145,7 +182,11 @@ let dino = {
         const dy = this.y;
         let isN = (Math.floor(score / 100) % 2 !== 0);
 
-        ctx.fillStyle = isN ? "#a8e063" : "#68bb59";
+        if (this.shieldTimer > 0 && Math.floor(frameCount / 4) % 2 === 0) {
+            ctx.fillStyle = "#ffd700";
+        } else {
+            ctx.fillStyle = isN ? "#a8e063" : "#68bb59";
+        }
 
         if (this.isDuck) {
             ctx.beginPath();
@@ -177,7 +218,7 @@ let dino = {
             ctx.beginPath();
             ctx.arc(dx + 33, dy + 3, 2, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = isN ? "#a8e063" : "#68bb59";
+            ctx.fillStyle = (this.shieldTimer > 0 && Math.floor(frameCount / 4) % 2 === 0) ? "#ffd700" : (isN ? "#a8e063" : "#68bb59");
             ctx.beginPath();
             ctx.moveTo(dx + 12, dy + 20);
             ctx.lineTo(dx, dy + 10);
@@ -193,6 +234,7 @@ let dino = {
 let obstacles = [];
 let flowers = [];
 let decorations = [];
+let powerUps = [];
 
 class GameObject {
     constructor(x, y, w, h, speed, type, color) {
@@ -253,6 +295,34 @@ class GameObject {
     }
 }
 
+class PowerUp {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.w = 25;
+        this.h = 25;
+        this.speed = speed;
+    }
+    update() {
+        this.x -= this.speed;
+    }
+    draw() {
+        ctx.save();
+        ctx.fillStyle = "#00d2d3";
+        ctx.beginPath();
+        ctx.arc(this.x + 12, this.y + 12, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 12px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("⭐", this.x + 12, this.y + 16);
+        ctx.restore();
+    }
+    collidesWith(obj) {
+        return (obj.x < this.x + this.w && obj.x + obj.w > this.x && obj.y < this.y + this.h && obj.y + obj.h > this.y);
+    }
+}
+
 class Flower {
     constructor(x) {
         this.x = x;
@@ -281,9 +351,11 @@ function initGame() {
     dino.vy = 0;
     dino.grounded = true;
     dino.isDuck = false;
+    dino.shieldTimer = 0;
     obstacles = [];
     decorations = [];
     flowers = [];
+    powerUps = [];
     score = 0;
     frameCount = 0;
     speed = 6;
@@ -307,12 +379,17 @@ function spawnObstacle() {
     } else {
         let birdColors = ["#ff4757", "#2ed573", "#1e90ff", "#ffa502", "#9b59b6", "#ff6b81"];
         let randomColor = birdColors[Math.floor(Math.random() * birdColors.length)];
-        
         let birdHeights = [GROUND_Y - 140, GROUND_Y - 165, GROUND_Y - 190]; 
         let y = birdHeights[Math.floor(Math.random() * birdHeights.length)];
         obstacles.push(new GameObject(x, y, 42, 22, speed, 'bird', randomColor));
     }
-    setTimeout(spawnObstacle, Math.floor(Math.random() * 1200) + 1000);
+
+    if (Math.random() < 0.2) {
+        powerUps.push(new PowerUp(x + 60, GROUND_Y - 100));
+    }
+
+    let nextTime = Math.max(700, 1200 - Math.floor(score / 5) * 15);
+    setTimeout(spawnObstacle, Math.floor(Math.random() * 500) + nextTime);
 }
 
 function gameLoop() {
@@ -323,13 +400,12 @@ function gameLoop() {
     if (gameState === 'playing') {
         frameCount++;
         score = Math.floor(frameCount / 10);
+        speed = 6 + Math.floor(score / 200);
     }
 
-    // Mặt trời / Mặt trăng
     ctx.fillStyle = isN ? "#f1c40f" : "#ffd700";
     ctx.beginPath(); ctx.arc(800, 60, 25, 0, Math.PI * 2); ctx.fill();
 
-    // Mây
     if (Math.random() < 0.02) {
         decorations.push(new GameObject(canvas.width + 50, Math.random() * 100 + 20, 45, 18, speed * 0.3, 'cloud'));
     }
@@ -339,7 +415,6 @@ function gameLoop() {
         if (decorations[i].x < -60) decorations.splice(i, 1);
     }
 
-    // Thảm cỏ xanh mướt phần dưới + hoa lá
     ctx.fillStyle = isN ? "#27ae60" : "#2ecc71";
     ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
 
@@ -357,30 +432,51 @@ function gameLoop() {
         if (flowers[i].x < -20) flowers.splice(i, 1);
     }
 
-    // Chướng ngại vật
+    for (let i = powerUps.length - 1; i >= 0; i--) {
+        let p = powerUps[i];
+        p.speed = speed;
+        p.update();
+        p.draw();
+        if (p.collidesWith(dino)) {
+            dino.shieldTimer = 300;
+            playSound('powerup');
+            powerUps.splice(i, 1);
+        } else if (p.x < -30) {
+            powerUps.splice(i, 1);
+        }
+    }
+
     for (let i = obstacles.length - 1; i >= 0; i--) {
         let obs = obstacles[i];
         obs.speed = speed;
         obs.update();
         obs.draw();
         if (obs.collidesWith(dino)) {
-            gameOver();
+            if (dino.shieldTimer > 0) {
+                obstacles.splice(i, 1);
+                playSound('powerup');
+            } else {
+                gameOver();
+            }
         }
         if (obs.x < -obs.w) obstacles.splice(i, 1);
     }
 
-    // Khủng long
     dino.update();
     dino.draw();
 
-    // --- Điểm số đã được lùi hẳn vào trong (cách mép phải 120px) ---
+    // Điểm số đã được căn lề chuẩn đẹp ở góc phải (canvas.width - 25)
     ctx.fillStyle = isN ? "#f1c40f" : "#2c3e50";
     ctx.font = "bold 18px monospace";
     ctx.textAlign = "right";
-    ctx.fillText("🏆 HI: " + highScore, canvas.width - 40, 30);
-    ctx.fillText("🎯 SCORE: " + score + (isN ? " 🌙" : " ☀️"), canvas.width - 40, 55);
+    ctx.fillText("🏆 HI: " + highScore, canvas.width - 25, 30);
+    ctx.fillText("🎯 SCORE: " + score + (isN ? " 🌙" : " ☀️"), canvas.width - 25, 55);
+    
+    if (dino.shieldTimer > 0) {
+        ctx.fillStyle = "#00d2d3";
+        ctx.fillText("⭐ BẤT TỬ: " + Math.ceil(dino.shieldTimer / 60) + "s", canvas.width - 25, 80);
+    }
 
-    // Màn hình Game Over
     if (gameState === 'over') {
         ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -394,7 +490,7 @@ function gameLoop() {
         ctx.font = "18px monospace";
         ctx.fillText("Điểm số hiện tại: " + score, canvas.width / 2, canvas.height / 2 + 5);
         ctx.fillText("🏆 Kỷ lục cao nhất: " + highScore, canvas.width / 2, canvas.height / 2 + 35);
-        ctx.fillText("💡 Nhấn SPACE để chơi lại!", canvas.width / 2, canvas.height / 2 + 75);
+        ctx.fillText("💡 Nhấn SPACE hoặc nút bấm để chơi lại!", canvas.width / 2, canvas.height / 2 + 75);
     }
 
     requestAnimationFrame(gameLoop);
@@ -411,6 +507,22 @@ function gameOver() {
 function resetGame() {
     gameState = 'playing';
     initGame();
+}
+
+function triggerJump() {
+    canvas.focus();
+    initAudio();
+    if (gameState === 'over') {
+        resetGame();
+    } else {
+        dino.jump();
+    }
+}
+
+function triggerDuck(status) {
+    if (gameState === 'playing') {
+        dino.duck(status);
+    }
 }
 
 window.addEventListener("keydown", function(e) {
@@ -453,4 +565,4 @@ gameLoop();
 </html>
 """
 
-components.html(dino_html, height=450)
+components.html(dino_html, height=520)
